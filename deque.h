@@ -3,7 +3,7 @@ typedef void* data_type;
 
 Deque *deque_construct();
 
-void deque_destroy(Deque *d);
+void deque_destroy(Deque *d, void(*destroy_fn)(data_type*));
 
 void deque_push_front(Deque *d);
 
