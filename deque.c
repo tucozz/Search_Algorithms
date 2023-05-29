@@ -59,6 +59,15 @@ data_type deque_pop_front(Deque *d){
 
 }
 
-int deque_size(Deque *d){
+data_type deque_get(Deque *d, int idx){
+    int POS_ITEM = d->inicio + idx;
+    int BLOCO_IDX = (int)(POS_ITEM/d->tamanho_bloco);
+    int ITEM_IDX = POS_ITEM%d->tamanho_bloco;
 
+    return d->map[BLOCO_IDX][ITEM_IDX];
+}
+
+int deque_size(Deque *d){
+    return (d->bloco_final - d->bloco_inicial)
+    * d->tamanho_bloco + (d->fim - d->inicio);
 }
