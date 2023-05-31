@@ -14,16 +14,10 @@ int main(){
 
     Deque *d = deque_construct(free);
 
-    int v1 = 3;
-    deque_push_back(d, &v1);
-    int v2 = 5;
-    deque_push_front(d, &v2);
-    int v3 = 5;
-    deque_push_front(d, &v3);
-    int v9 = 5;
-    deque_push_front(d, &v9);
-    //int v10 = 7;
-    //deque_push_front(d, &v10);
+    for(int i = 0; i < 25; i++){
+        int *v = malloc(sizeof(int));
+        deque_push_front(d, &v);
+    }
 
     deque_print(d, print_deque);
 
