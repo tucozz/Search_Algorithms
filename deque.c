@@ -3,7 +3,7 @@
 
 struct _Deque{
     data_type **map;
-    void(*destroy_fn)(data_type*);
+    void(*destroy_fn)(data_type);
     int bloco_inicial;
     int bloco_final;
     int tamanho_bloco;
@@ -78,11 +78,17 @@ void deque_push_front(Deque *d, data_type data){
         d->bloco_inicial--;
         d->map[d->bloco_inicial] = calloc(d->tamanho_bloco, sizeof(data_type));
         d->inicio = d->tamanho_bloco - 1;
+
+        // Insere o novo elemento no início do deque
+        // sem decrementar o inicio
+        d->map[d->bloco_inicial][d->inicio] = data;
     }
-    
-    // Insere o novo elemento no início do deque
-    d->map[d->bloco_inicial][d->inicio] = data;
-    d->inicio--;
+    else{
+        // Insere o novo elemento no início do deque
+        // e decrementa o inicio
+        d->inicio--;
+        d->map[d->bloco_inicial][d->inicio] = data;
+    }
 }
 
 void deque_push_back(Deque *d, data_type data){
@@ -145,7 +151,7 @@ int deque_size(Deque *d){
 }
 
 void deque_print(Deque *d, void(*print_fn)(data_type)){
-    for(int i = d->bloco_inicial; i < d->bloco_final; i++){
+    for(int i = d->bloco_inicial; i <= d->bloco_final; i++){
         int idx_init = 0;
         int idx_fim = d->tamanho_bloco - 1;
 
@@ -156,7 +162,7 @@ void deque_print(Deque *d, void(*print_fn)(data_type)){
             idx_fim = d->fim;
 
         //vai printando todos os itens dentro do bloco
-        for(int j = idx_init; j < idx_fim; i++){
+        for(int j = idx_init; j <= idx_fim; j++){
             print_fn(d->map[i][j]);
         }
     }
