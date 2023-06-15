@@ -12,17 +12,6 @@ struct HashTable
     int n_elements;
 };
 
-typedef struct
-{
-    void *key;
-    void *val;
-} HashTableItem;
-
-static int _kvp_cmp_fn(HashTableItem i1, HashTableItem i2)
-{
-    return hash_fn(i1.key, i2.key);
-}
-
 HashTableItem *_hash_pair_construct(void *key, void *val)
 {
     HashTableItem *p = calloc(1, sizeof(HashTableItem));
@@ -56,16 +45,37 @@ void hash_table_set(HashTable *h, void *key, void *val)
     //identifica qual o index real a ser adicionado na hashtable
     int new_idx = h->hash_fn(h, key)%h->table_size;
     //verifica se o item existe lá dentro (conferir se existe jeito melhor de fazer isso)
-    forward_list_remove_first(h->buckets[new_idx], new_kvp, _kvp_cmp_fn);
+    Node *n = h->buckets[new_idx]->head;
+    Node *prev = NULL;
+    Node *new_n = NULL;
+
+    while (n != NULL)
+    {
+        if (h->cmp_fn(val, (void*)((HashTableItem *)n->value)->val) == 0)
+        {
+            if (prev == NULL)
+                h->buckets[new_idx]->head = new_n = n->next;
+            else
+                prev->next = new_n = n->next;
+
+            node_destroy(n);
+            n = new_n;
+            h->buckets[new_idx]->size--;
+            break;
+        }
+        else
+        {
+            prev = n;
+            n = n->next;
+        }
+    }
     //adiciona no final da lista
-    forward_list_push_back(h, new_kvp);
+    forward_list_push_back(h->buckets[new_idx], new_kvp);
 
 }
 
 void *hash_table_get(HashTable *h, void *key)
 {
-    //cria um Key_Value_Pair por conveniencia
-    HashTableItem *new_kvp = _hash_pair_construct(key, NULL);
     //identifica qual o index real a ser buscado na hashtable
     int new_idx = h->hash_fn(h, key)%h->table_size;
     //retorna o item desejado se ele existir no index, e NULL se nao.
@@ -73,7 +83,7 @@ void *hash_table_get(HashTable *h, void *key)
 
     while (n != NULL)
     {
-        if (!h->cmp_fn(n->value, key))
+        if (!h->cmp_fn((void*)((HashTableItem *)n->value)->val, key))
             return n->value;
 
         n = n->next;
@@ -84,8 +94,6 @@ void *hash_table_get(HashTable *h, void *key)
 
 void *hash_table_pop(HashTable *h, void *key)
 {
-    //cria um Key_Value_Pair por conveniencia
-    HashTableItem *new_kvp = _hash_pair_construct(key, NULL);
     //identifica qual o index real a ser buscado na hashtable
     int new_idx = h->hash_fn(h, key)%h->table_size;
     //retorna o item desejado se ele existir no index, e NULL se nao.
