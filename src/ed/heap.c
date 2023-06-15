@@ -15,6 +15,26 @@ struct Heap
     int capacity;
 };
 
+static int node_idx_parent(int idx){return (int)(idx - 1)/2;}
+
+static int node_idx_left_child(int idx){return 2*idx + 1;}
+
+static int node_idx_right_child(int idx){return 2*idx + 2;}
+
+static void _heapify(Heap *h){
+    if(h->size == 0)
+        return;
+    
+    int current = h->size-1;
+    while(current != 0 && h->nodes[node_idx_parent(current)].priority < h->nodes[current].priority){
+        HeapNode aux = h->nodes[current];
+        h->nodes[current] = h->nodes[node_idx_parent(current)];
+        h->nodes[node_idx_parent(current)] = aux;
+        
+
+    }
+}
+
 Heap *heap_construct(){
     Heap *h = malloc(sizeof(Heap));
     h->size = 0;
