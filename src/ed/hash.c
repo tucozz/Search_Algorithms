@@ -45,13 +45,15 @@ void hash_table_set(HashTable *h, void *key, void *val)
     //identifica qual o index real a ser adicionado na hashtable
     int new_idx = h->hash_fn(h, key)%h->table_size;
     //verifica se o item existe lá dentro (conferir se existe jeito melhor de fazer isso)
+    if(h->buckets[new_idx] == NULL)
+        h->buckets[new_idx] = forward_list_construct();
     Node *n = h->buckets[new_idx]->head;
     Node *prev = NULL;
     Node *new_n = NULL;
 
     while (n != NULL)
     {
-        if (h->cmp_fn(val, (void*)((HashTableItem *)n->value)->val) == 0)
+        if (h->cmp_fn(key, (void*)((HashTableItem *)n->value)->key) == 0)
         {
             if (prev == NULL)
                 h->buckets[new_idx]->head = new_n = n->next;
@@ -70,8 +72,7 @@ void hash_table_set(HashTable *h, void *key, void *val)
         }
     }
     //adiciona no final da lista
-    forward_list_push_back(h->buckets[new_idx], new_kvp);
-
+    forward_list_push_front(h->buckets[new_idx], new_kvp);
 }
 
 void *hash_table_get(HashTable *h, void *key)
@@ -79,12 +80,15 @@ void *hash_table_get(HashTable *h, void *key)
     //identifica qual o index real a ser buscado na hashtable
     int new_idx = h->hash_fn(h, key)%h->table_size;
     //retorna o item desejado se ele existir no index, e NULL se nao.
+    if(h->buckets[new_idx] == NULL)
+        return NULL;
+    
     Node *n = h->buckets[new_idx]->head;
 
     while (n != NULL)
     {
-        if (!h->cmp_fn((void*)((HashTableItem *)n->value)->val, key))
-            return n->value;
+        if (!h->cmp_fn((void*)((HashTableItem *)n->value)->key, key))
+            return ((HashTableItem *)n->value)->val;
 
         n = n->next;
     }
@@ -97,6 +101,9 @@ void *hash_table_pop(HashTable *h, void *key)
     //identifica qual o index real a ser buscado na hashtable
     int new_idx = h->hash_fn(h, key)%h->table_size;
     //retorna o item desejado se ele existir no index, e NULL se nao.
+    if(h->buckets[new_idx] == NULL)
+        return NULL;
+
     Node *n = h->buckets[new_idx]->head;
     Node *prev = NULL;
     Node *new_n = NULL;
@@ -104,7 +111,7 @@ void *hash_table_pop(HashTable *h, void *key)
 
     while (n != NULL)
     {
-        if (h->cmp_fn(key, (void*)((HashTableItem *)n->value)->val) == 0)
+        if (h->cmp_fn(key, (void*)((HashTableItem *)n->value)->key) == 0)
         {
             data = n->value;
             if (prev == NULL)
@@ -115,7 +122,7 @@ void *hash_table_pop(HashTable *h, void *key)
             node_destroy(n);
             n = new_n;
             h->buckets[new_idx]->size--;
-            return data;
+            return ((HashTableItem *)data)->val;
         }
         else
         {
