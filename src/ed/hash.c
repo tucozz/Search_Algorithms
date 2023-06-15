@@ -69,7 +69,17 @@ void *hash_table_get(HashTable *h, void *key)
     //identifica qual o index real a ser buscado na hashtable
     int new_idx = h->hash_fn(h, key)%h->table_size;
     //retorna o item desejado se ele existir no index, e NULL se nao.
-    return forward_list_find(h->buckets[new_idx], new_kvp, _kvp_cmp_fn);
+    Node *n = h->buckets[new_idx]->head;
+
+    while (n != NULL)
+    {
+        if (!h->cmp_fn(n->value, key))
+            return n->value;
+
+        n = n->next;
+    }
+
+    return NULL;
 }
 
 void *hash_table_pop(HashTable *h, void *key)
@@ -86,17 +96,17 @@ void *hash_table_pop(HashTable *h, void *key)
 
     while (n != NULL)
     {
-        if (h->cmp_fn(key, (void*)((HashTableItem)n->value)->val) == 0)
+        if (h->cmp_fn(key, (void*)((HashTableItem *)n->value)->val) == 0)
         {
             data = n->value;
             if (prev == NULL)
-                l->head = new_n = n->next;
+                h->buckets[new_idx]->head = new_n = n->next;
             else
                 prev->next = new_n = n->next;
 
             node_destroy(n);
             n = new_n;
-            l->size--;
+            h->buckets[new_idx]->size--;
             return data;
         }
         else
@@ -105,8 +115,6 @@ void *hash_table_pop(HashTable *h, void *key)
             n = n->next;
         }
     }
-    return NULL;
-
     return NULL;
 }
 
