@@ -12,6 +12,14 @@ struct HashTable
     int n_elements;
 };
 
+struct HashTableIterator
+{
+    HashTable *h;
+    Node *current;
+    int current_idx;
+    int visited;
+};
+
 HashTableItem *_hash_pair_construct(void *key, void *val)
 {
     HashTableItem *p = calloc(1, sizeof(HashTableItem));
@@ -38,7 +46,7 @@ HashTable *hash_table_construct(int table_size, HashFunction hash_fn, CmpFunctio
     return hash_tbl;
 }
 
-void hash_table_set(HashTable *h, void *key, void *val)
+void *hash_table_set(HashTable *h, void *key, void *val)
 {
     //cria um Key_Value_Pair a ser adicionado
     HashTableItem *new_kvp = _hash_pair_construct(key, val);
@@ -50,6 +58,7 @@ void hash_table_set(HashTable *h, void *key, void *val)
     Node *n = h->buckets[new_idx]->head;
     Node *prev = NULL;
     Node *new_n = NULL;
+    data_type *data_return = NULL;
 
     while (n != NULL)
     {
@@ -60,7 +69,7 @@ void hash_table_set(HashTable *h, void *key, void *val)
             else
                 prev->next = new_n = n->next;
 
-            node_destroy(n);
+            data_return = n->value;
             n = new_n;
             h->buckets[new_idx]->size--;
             break;
@@ -73,6 +82,7 @@ void hash_table_set(HashTable *h, void *key, void *val)
     }
     //adiciona no final da lista
     forward_list_push_front(h->buckets[new_idx], new_kvp);
+    return data_return;
 }
 
 void *hash_table_get(HashTable *h, void *key)
@@ -164,4 +174,51 @@ void hash_table_destroy(HashTable *h)
 
     free(h->buckets);
     free(h);
+}
+
+// cria um novo iterador para a tabela hash
+HashTableIterator *hash_table_iterator(HashTable *h){
+    HashTableIterator *it = malloc(sizeof(HashTableIterator));
+    it->h = h;
+    it->visited = 0;
+    it->current = NULL;
+    it->current_idx = 0;
+
+    if(h->n_elements == 0)
+        return it;
+
+    for(int i = 0; i < h->buckets; i ++){
+        if(h->buckets[i] != NULL){
+            it->current = h->buckets[i]->head;
+            it->current_idx = i;
+        }
+    }
+    return it;
+}
+
+// retorna 1 se o iterador chegou ao fim da tabela hash ou 0 caso contrario
+int hash_table_iterator_is_over(HashTableIterator *it){
+    return it->visited >= it->h->n_elements;
+}
+
+// retorna o proximo par chave valor da tabela hash
+HashTableItem *hash_table_iterator_next(HashTableIterator *it){
+    int verify = 0;
+    HashTableItem *pop;
+    if(it->current->next != NULL)
+        it->current = it->current->next;
+    else{
+        do
+        {
+            verify++;
+        } while (it->h->buckets[verify] == NULL && it->h->n_elements > it->visited);
+        it->current_idx = verify;
+        it->current = it->h->buckets[verify]->head;
+    }
+    return pop;
+}
+
+// desaloca o iterador da tabela hash
+void hash_table_iterator_destroy(HashTableIterator *it){
+    free(it);
 }
