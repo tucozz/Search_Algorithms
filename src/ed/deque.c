@@ -195,8 +195,7 @@ data_type deque_get(Deque *d, int idx){
 }
 
 int deque_size(Deque *d){
-    return (d->bloco_final - d->bloco_inicial)
-    * d->tamanho_bloco + (d->fim - d->inicio);
+    return (d->bloco_final - d->bloco_inicial) * d->tamanho_bloco + (d->fim - d->inicio);
 }
 
 void deque_print(Deque *d, void(*print_fn)(data_type)){

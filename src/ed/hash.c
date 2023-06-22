@@ -82,6 +82,7 @@ void *hash_table_set(HashTable *h, void *key, void *val)
     }
     //adiciona no final da lista
     forward_list_push_front(h->buckets[new_idx], new_kvp);
+    h->n_elements++;
     return data_return;
 }
 
@@ -187,10 +188,11 @@ HashTableIterator *hash_table_iterator(HashTable *h){
     if(h->n_elements == 0)
         return it;
 
-    for(int i = 0; i < h->buckets; i ++){
+    for(int i = 0; i < h->table_size; i ++){
         if(h->buckets[i] != NULL){
             it->current = h->buckets[i]->head;
             it->current_idx = i;
+            return it;
         }
     }
     return it;
@@ -203,8 +205,8 @@ int hash_table_iterator_is_over(HashTableIterator *it){
 
 // retorna o proximo par chave valor da tabela hash
 HashTableItem *hash_table_iterator_next(HashTableIterator *it){
-    int verify = 0;
-    HashTableItem *pop;
+    int verify = it->current_idx;
+    HashTableItem *pop = (HashTableItem *)it->current->value;
     if(it->current->next != NULL)
         it->current = it->current->next;
     else{
@@ -215,6 +217,7 @@ HashTableItem *hash_table_iterator_next(HashTableIterator *it){
         it->current_idx = verify;
         it->current = it->h->buckets[verify]->head;
     }
+    it->visited++;
     return pop;
 }
 
