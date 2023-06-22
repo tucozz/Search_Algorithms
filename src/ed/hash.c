@@ -64,6 +64,7 @@ void *hash_table_set(HashTable *h, void *key, void *val)
     {
         if (h->cmp_fn(key, (void*)((HashTableItem *)n->value)->key) == 0)
         {
+            h->n_elements--;
             if (prev == NULL)
                 h->buckets[new_idx]->head = new_n = n->next;
             else
@@ -81,8 +82,8 @@ void *hash_table_set(HashTable *h, void *key, void *val)
         }
     }
     //adiciona no final da lista
-    forward_list_push_front(h->buckets[new_idx], new_kvp);
     h->n_elements++;
+    forward_list_push_front(h->buckets[new_idx], new_kvp);
     return data_return;
 }
 
@@ -124,6 +125,7 @@ void *hash_table_pop(HashTable *h, void *key)
     {
         if (h->cmp_fn(key, (void*)((HashTableItem *)n->value)->key) == 0)
         {
+            h->n_elements--;
             data = n->value;
             if (prev == NULL)
                 h->buckets[new_idx]->head = new_n = n->next;
@@ -185,9 +187,12 @@ HashTableIterator *hash_table_iterator(HashTable *h){
     it->current = NULL;
     it->current_idx = 0;
 
+    //se a hash estiver vazia, volta o iterador assim mesmo
     if(h->n_elements == 0)
         return it;
 
+    //se nao voltou, é pq tem item. isso daqui procura o primeiro index
+    //que a forward list nao esteja NULL
     for(int i = 0; i < h->table_size; i ++){
         if(h->buckets[i] != NULL){
             it->current = h->buckets[i]->head;
@@ -205,15 +210,20 @@ int hash_table_iterator_is_over(HashTableIterator *it){
 
 // retorna o proximo par chave valor da tabela hash
 HashTableItem *hash_table_iterator_next(HashTableIterator *it){
+    //verify é qual index da hashtable a gente está atualmente
     int verify = it->current_idx;
+    //pop só salva qual item eu tenho que retornar (o atual)
     HashTableItem *pop = (HashTableItem *)it->current->value;
+    //se ainda tiver alguma coisa na Lista que eu to, só passa pro proximo
     if(it->current->next != NULL)
         it->current = it->current->next;
+    //se nao, tem que procurar qual o proximo index que a Lista nao é nula
     else{
         do
         {
             verify++;
         } while (it->h->buckets[verify] == NULL && it->h->n_elements > it->visited);
+        //saindo daqui, h->buckets[verify] não é NULL, então o proximo elemento seria sua head
         it->current_idx = verify;
         it->current = it->h->buckets[verify]->head;
     }

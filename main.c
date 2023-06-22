@@ -1,60 +1,94 @@
-
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
-#include "src/search/labirinto.h"
-#include "src/search/algorithms.h"
+#include "src/ed/hash.h"
 
-void print_result(ResultData *result)
+typedef struct
 {
-    if (!result->sucesso)
-    {
-        printf("IMPOSSIVEL\n");
-        return;
-    }
+    int x, y;
+} Celula;
 
-    for (int i = 0; i < result->tamanho_caminho; i++)
-        printf("%d %d\n", result->caminho[i].x, result->caminho[i].y);
-
-    printf("%.2lf\n", result->custo_caminho);
-    printf("%d\n", result->tamanho_caminho);
-    printf("%d\n", result->nos_expandidos);
+Celula *celula_create(int x, int y)
+{
+    Celula *c = malloc(sizeof(Celula));
+    c->x = x;
+    c->y = y;
+    return c;
 }
 
-void mostra_caminho(Labirinto *l, ResultData *result, Celula inicio, Celula fim)
+void celula_destroy(Celula *c)
 {
-    if (result->sucesso)
-    {
-        for (int i = 0; i < result->tamanho_caminho; i++)
-            labirinto_atribuir(l, result->caminho[i].y, result->caminho[i].x, CAMINHO);
-    }
+    free(c);
+}
 
-    labirinto_atribuir(l, inicio.y, inicio.x, INICIO);
-    labirinto_atribuir(l, fim.y, fim.x, FIM);
-    labirinto_print(l);
+int celula_hash(HashTable *h, void *key)
+{
+    Celula *c = (Celula *)key;
+    // 83 e 97 sao primos e o operador "^" é o XOR bit a bit
+    return ((c->x * 83) ^ (c->y * 97)) % hash_table_size(h);
+}
+
+int celula_cmp(void *c1, void *c2)
+{
+    Celula *a = (Celula *)c1;
+    Celula *b = (Celula *)c2;
+
+    if (a->x == b->x && a->y == b->y)
+        return 0;
+    else
+        return 1;
 }
 
 int main()
 {
-    char arquivo_labirinto[100];
-    char algoritmo[100];
-    Celula inicio, fim;
-    ResultData result;
-    Labirinto *lab;
+    int i, n, x, y;
+    char cmd[10];
 
-    scanf("%s", arquivo_labirinto);
-    scanf("%d %d", &inicio.x, &inicio.y);
-    scanf("%d %d", &fim.x, &fim.y);
-    scanf("\n%s", algoritmo);
+    HashTable *h = hash_table_construct(19, celula_hash, celula_cmp);
 
-    lab = labirinto_carregar(arquivo_labirinto);
+    scanf("%d", &n);
 
-    result = dummy_search(lab, inicio, fim);
-    print_result(&result);
-    mostra_caminho(lab, &result, inicio, fim);
+    for (i = 0; i < n; i++)
+    {
+        scanf("\n%s", cmd);
 
-    labirinto_destruir(lab);
-    if (result.caminho != NULL)
-        free(result.caminho);
+        if (!strcmp(cmd, "SET"))
+        {
+            int *pos = malloc(sizeof(int));
+            scanf("%d %d %d", &x, &y, pos);
+            Celula *cel = celula_create(x, y);
+            void *prev = hash_table_set(h, cel, pos);
+
+            // se o par ja existia, podemos liberar a celula e a posicao antiga
+            if (prev)
+            {
+                free(prev);
+                celula_destroy(cel);
+            }
+        }
+        else if (!strcmp(cmd, "GET"))
+        {
+            scanf("%d %d", &x, &y);
+            Celula *cel = celula_create(x, y);
+            int *pos = hash_table_get(h, cel);
+            printf("%d\n", *pos);
+            celula_destroy(cel);
+        }
+    }
+
+    HashTableIterator *it = hash_table_iterator(h);
+
+    while (!hash_table_iterator_is_over(it))
+    {
+        HashTableItem *item = hash_table_iterator_next(it);
+        Celula *cel = (Celula *)item->key;
+        int *pos = (int *)item->val;
+        celula_destroy(cel);
+        free(pos);
+    }
+
+    hash_table_iterator_destroy(it);
+    hash_table_destroy(h);
 
     return 0;
 }
