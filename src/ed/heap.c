@@ -83,10 +83,9 @@ void *heap_max(Heap *heap){return heap->nodes[0].data;}
 
 double heap_max_priority(Heap *heap){return heap->nodes[0].priority;}
 
-void *heap_pop(Heap *heap){
-
-}
+void *heap_pop(Heap *heap){return _heapify_down(heap).data;}
 
 void heap_destroy(Heap *heap){
-
+    free(heap->nodes);
+    free(heap);
 }
