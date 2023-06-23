@@ -21,18 +21,36 @@ static int node_idx_left_child(int idx){return 2*idx + 1;}
 
 static int node_idx_right_child(int idx){return 2*idx + 2;}
 
+static void _heapify_idx_swap(HeapNode *nodes, int idx1, int idx2){
+    HeapNode aux = nodes[idx1];
+    nodes[idx1] = nodes[idx2];
+    nodes[idx2] = aux;
+}
+
 static void _heapify(Heap *h){
     if(h->size == 0)
         return;
     
     int current = h->size-1;
-    while(current != 0 && h->nodes[node_idx_parent(current)].priority < h->nodes[current].priority){
-        HeapNode aux = h->nodes[current];
-        h->nodes[current] = h->nodes[node_idx_parent(current)];
-        h->nodes[node_idx_parent(current)] = aux;
-        
+    while(current != 0 && h->nodes[node_idx_parent(current)].priority > h->nodes[current].priority)
+        _heapify_idx_swap(h->nodes, current, node_idx_parent(current));
+}
 
+static HeapNode _heapify_down(Heap *h){
+    HeapNode pop = h->nodes[0];
+    h->size--;
+    h->nodes[0] = h->nodes[h->size];
+    
+    int current = 0;
+
+    while(current < h->size && (h->nodes[node_idx_left_child(current)].priority < h->nodes[current].priority
+                            || h->nodes[node_idx_right_child(current)].priority < h->nodes[current].priority)){
+
+        if(h->nodes[node_idx_left_child(current)].priority < h->nodes[node_idx_right_child(current)].priority)
+            _heapify_idx_swap(h,node_idx_left_child(current), node_idx_right_child(current));
     }
+
+    return pop;
 }
 
 Heap *heap_construct(){
@@ -54,6 +72,7 @@ void heap_push(Heap *heap, void *data, double priority){
     node.priority = priority;
 
     heap->nodes[heap->size] = node;
+    heap->size++;
 
     _heapify(heap);
 }
