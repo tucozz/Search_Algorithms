@@ -46,6 +46,9 @@ int hash_table_num_elems(HashTable *h);
 // libera o espaco alocado para a tabela hash
 void hash_table_destroy(HashTable *h);
 
+//retorna a função cmp usada
+CmpFunction hash_table_cmp_fn(HashTable *h);
+
 // cria um novo iterador para a tabela hash
 HashTableIterator *hash_table_iterator(HashTable *h);
 

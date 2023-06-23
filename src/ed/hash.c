@@ -148,6 +148,11 @@ int hash_table_num_elems(HashTable *h)
     return h->n_elements;
 }
 
+CmpFunction hash_table_cmp_fn(HashTable *h)
+{
+    return h->cmp_fn;
+}
+
 void hash_table_destroy(HashTable *h)
 {
     for (int i = 0; i < h->table_size; i++)

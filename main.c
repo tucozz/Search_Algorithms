@@ -62,7 +62,7 @@ int main()
             Celula *cel = celula_create(x, y);
             cel = heap_push(heap, cel, priority);
 
-            // se a celula ja existia, lembre-se liberar a memoria alocada para a nova celula
+            //se a celula ja existia, lembre-se liberar a memoria alocada para a nova celula
             if (cel)
                 celula_destroy(cel);
         }
