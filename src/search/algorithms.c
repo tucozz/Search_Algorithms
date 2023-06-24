@@ -134,8 +134,41 @@ ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)
 
 ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)
 {
-    // TODO!
-    return _default_result();
+    ResultData result = _default_result();
+
+    LabNode *atual = _lab_node_construct(inicio, NULL);
+    Stack *fronteira = stack_construct(NULL);
+    while (labirinto_obter(l, atual->cel.y, atual->cel.x) != FIM){
+        for(int i = 0; i < 8; i++){
+            LabNode *node = _atualiza_fronteira(l, atual, i);
+            if(node)
+                stack_push(fronteira, node);
+        }
+        result.nos_expandidos++;
+        labirinto_atribuir(l, atual->cel.y, atual->cel.x, EXPANDIDO);
+        atual = queue_pop(fronteira);
+        if(!atual)
+            return _default_result();
+    }
+    result.sucesso = 1;
+
+    Stack *stack = stack_construct(NULL);
+    LabNode *current = atual;
+    while(current != NULL){
+        stack_push(stack, current);
+        current = current->anterior;
+    }
+
+    while(!stack_empty(stack)){
+        result.caminho[result.tamanho_caminho] = ((LabNode *)stack_pop(stack))->cel;
+        result.tamanho_caminho++;
+    }
+    
+    for(int i = 0; i < result.tamanho_caminho - 1; i++){
+        result.tamanho_caminho += _calcula_distancia(result.caminho[i], result.caminho[i+1]);
+    }
+    
+    return result;
 }
 
 ResultData dummy_search(Labirinto *l, Celula inicio, Celula fim)
