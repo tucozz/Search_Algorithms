@@ -22,7 +22,7 @@ struct HashTableIterator
 
 HashTableItem *_hash_pair_construct(void *key, void *val)
 {
-    HashTableItem *p = calloc(1, sizeof(HashTableItem));
+    HashTableItem *p = malloc(sizeof(HashTableItem));
     p->key = key;
     p->val = val;
     return p;
@@ -111,14 +111,14 @@ void *hash_table_pop(HashTable *h, void *key)
     Node *n = h->buckets[new_idx]->head;
     Node *prev = NULL;
     Node *new_n = NULL;
-    data_type data = NULL;
+    void *data = NULL;
 
     while (n != NULL)
     {
         if (h->cmp_fn(key, (void*)((HashTableItem *)n->value)->key) == 0)
         {
             h->n_elements--;
-            data = n->value;
+            data = ((HashTableItem *)n->value)->val;
             if (prev == NULL)
                 h->buckets[new_idx]->head = new_n = n->next;
             else
@@ -133,7 +133,7 @@ void *hash_table_pop(HashTable *h, void *key)
                 h->buckets[new_idx] = NULL;
             }
                 
-            return ((HashTableItem *)data)->val;
+            return data;
         }
         else
         {
