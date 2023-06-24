@@ -114,7 +114,9 @@ void *heap_push(Heap *heap, void *data, double priority){
     int hash_new_idx = _heapify(heap, heap->size - 1);
     int *int_ptr = malloc(sizeof(int));
     *int_ptr = hash_new_idx;
-    hash_table_set(heap->hash, data, int_ptr);
+    void *prev = hash_table_set(heap->hash, data, int_ptr);
+    if(prev)
+        free(prev);
 
     return NULL;
 }
@@ -128,9 +130,21 @@ double heap_min_priority(Heap *heap){return heap->nodes[0].priority;}
 void *heap_pop(Heap *heap){
     heap->size--;
     void *pop = heap->nodes[0].data;
+
     void *hash_pop = hash_table_pop(heap->hash, heap->nodes[0].data);
     free(hash_pop);
-    _heapify_idx_swap(heap, 0, heap->size);
+
+    heap->nodes[0] = heap->nodes[heap->size];
+    int *zero = malloc(sizeof(int));
+    *zero = 0;
+    int deletazero = 1;
+    if(hash_table_num_elems(heap->hash) != 0){
+        void *prev = hash_table_set(heap->hash, heap->nodes[0].data, zero);
+        deletazero = 0;
+        free(prev);
+    }
+    if(deletazero)
+        free(zero);
     _heapify_down(heap, 0);
     return pop;
 }

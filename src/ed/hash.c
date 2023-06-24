@@ -124,9 +124,15 @@ void *hash_table_pop(HashTable *h, void *key)
             else
                 prev->next = new_n = n->next;
 
+            _hash_pair_destroy((HashTableItem *)n->value);
             node_destroy(n);
             n = new_n;
             h->buckets[new_idx]->size--;
+            if(h->buckets[new_idx]->size == 0){
+                forward_list_destroy(h->buckets[new_idx]);
+                h->buckets[new_idx] = NULL;
+            }
+                
             return ((HashTableItem *)data)->val;
         }
         else
