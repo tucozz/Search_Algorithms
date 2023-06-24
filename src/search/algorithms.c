@@ -1,10 +1,9 @@
-
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "algorithms.h"
-#include "queue.h"
-#include "stack.h"
+#include "../ed/queue.h"
+#include "../ed/stack.h"
 
 typedef struct{
     Celula cel;
@@ -146,7 +145,7 @@ ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)
         }
         result.nos_expandidos++;
         labirinto_atribuir(l, atual->cel.y, atual->cel.x, EXPANDIDO);
-        atual = queue_pop(fronteira);
+        atual = stack_pop(fronteira);
         if(!atual)
             return _default_result();
     }
