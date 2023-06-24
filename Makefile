@@ -26,4 +26,3 @@ clean:
 	
 run:
 	./main
-
