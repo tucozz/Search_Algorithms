@@ -1,4 +1,5 @@
 #include "deque.h"
+#include <stdlib.h>
 #include "forward_list.h"
 
 struct Deque{
