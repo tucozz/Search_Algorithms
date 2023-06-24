@@ -3,6 +3,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "algorithms.h"
+#include "queue.h"
+#include "stack.h"
+
+typedef struct{
+    Celula cel;
+    struct LabNode *anterior;
+}LabNode;
+
+LabNode *_lab_node_construct(Celula cel, LabNode *prev){
+    LabNode *labnode  = malloc(sizeof(LabNode));
+    labnode->cel = cel;
+    labnode->anterior = prev;
+}
 
 ResultData _default_result()
 {
@@ -17,6 +30,63 @@ ResultData _default_result()
     return result;
 }
 
+int _is_valid(Labirinto *l, Celula atual){
+    if ((atual.x > labirinto_n_colunas(l) - 1) || (atual.y > labirinto_n_linhas(l) - 1) || (atual.x < 0) || (atual.y < 0))
+        return 0;
+    if(labirinto_obter(l, atual.y, atual.x) == OCUPADO || labirinto_obter(l, atual.y, atual.x) == EXPANDIDO)
+        return 0;
+
+    return 1;
+}
+
+double _calcula_distancia(Celula cel1, Celula cel2){
+    return sqrt(pow(cel1.x - cel2.x, 2) + pow(cel1.y - cel2.y, 2));
+}
+
+LabNode *_atualiza_fronteira(Labirinto *l, LabNode *node, int idx){
+    Celula cel = node->cel;
+    
+    switch (idx)
+    {
+    case 0:
+        cel.y += 1;
+        break;
+    case 1:
+        cel.y +=1;
+        cel.x +=1;
+        break;
+    case 2:
+        cel.x +=1;
+        break;
+    case 3:
+        cel.x +=1;
+        cel.y -=1;
+        break;
+    case 4:
+        cel.y -=1;
+        break;
+    case 5:
+        cel.x -=1;
+        cel.y -=1;
+        break;
+    case 6:
+        cel.x -=1;
+        break;
+    case 7:
+        cel.x -=1;
+        cel.y +=1;
+        break;
+    default:
+        printf("IDX INVALIDO.\n");
+    }
+
+    if(!_is_valid(l, cel))
+        return NULL;
+
+    LabNode *pop = _lab_node_construct(cel, node);
+    return pop;
+}
+
 ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
 {
     // TODO!
@@ -25,8 +95,41 @@ ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
 
 ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)
 {
-    // TODO!
-    return _default_result();
+    ResultData result = _default_result();
+
+    LabNode *atual = _lab_node_construct(inicio, NULL);
+    Queue *fronteira = queue_construct(NULL);
+    while (labirinto_obter(l, atual->cel.y, atual->cel.x) != FIM){
+        for(int i = 0; i < 8; i++){
+            LabNode *node = _atualiza_fronteira(l, atual, i);
+            if(node)
+                queue_push(fronteira, node);
+        }
+        result.nos_expandidos++;
+        labirinto_atribuir(l, atual->cel.y, atual->cel.x, EXPANDIDO);
+        atual = queue_pop(fronteira);
+        if(!atual)
+            return _default_result();
+    }
+    result.sucesso = 1;
+
+    Stack *stack = stack_construct(NULL);
+    LabNode *current = atual;
+    while(current != NULL){
+        stack_push(stack, current);
+        current = current->anterior;
+    }
+
+    while(!stack_empty(stack)){
+        result.caminho[result.tamanho_caminho] = ((LabNode *)stack_pop(stack))->cel;
+        result.tamanho_caminho++;
+    }
+    
+    for(int i = 0; i < result.tamanho_caminho - 1; i++){
+        result.tamanho_caminho += _calcula_distancia(result.caminho[i], result.caminho[i+1]);
+    }
+    
+    return result;
 }
 
 ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)

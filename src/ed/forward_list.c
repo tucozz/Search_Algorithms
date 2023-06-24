@@ -116,6 +116,25 @@ data_type forward_list_pop_front(ForwardList *l)
     return data;
 }
 
+data_type forward_list_pop_back(ForwardList *l)
+{
+    if (l->head == NULL)
+        exit(printf("Error: forward_list_pop_front(): list is empty."));
+
+    Node *n = l->head;
+    Node *prev = NULL;
+
+    while(n->next != NULL){
+        prev = n;
+        n = n->next;
+    }
+
+    data_type pop = n->value;
+    prev->next = NULL;
+    free(n);
+    return pop;
+}
+
 ForwardList *forward_list_reverse(ForwardList *l)
 {
     ForwardList *new_list = forward_list_construct();

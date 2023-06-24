@@ -109,6 +109,16 @@ data_type forward_list_get(ForwardList *l, int i);
 data_type forward_list_pop_front(ForwardList *l);
 
 /**
+ * @brief Remove the last node of the linked list and returns its data.
+ * @param l
+ * Pointer to the linked list.
+ * @return data_type
+ * Pointer to the data stored in the first node of the linked list that was removed.
+ *
+ */
+data_type forward_list_pop_back(ForwardList *l);
+
+/**
  * @brief Create a new list given by the reverse of the given list.
  * @param l
  * Pointer to the linked list.
