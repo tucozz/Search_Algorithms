@@ -1,14 +1,14 @@
-
 #include "stack.h"
 #include "deque.h"
+#include <stdlib.h>
 
 struct Stack{
     Deque *deque; 
 };
 
-Stack *stack_construct(void(*destroy_fn)(data_type)){
+Stack *stack_construct(){
     Stack *s = malloc(sizeof(Stack));
-    s->deque = deque_construct(destroy_fn);
+    s->deque = deque_construct(NULL);
     return s;
 }
 

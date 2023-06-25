@@ -1,14 +1,15 @@
 
 #include "queue.h"
 #include "deque.h"
+#include <stdlib.h>
 
 struct Queue{
     Deque *deque;
 };
 
-Queue *queue_construct(void(*destroy_fn)(data_type)){
+Queue *queue_construct(){
     Queue *q = malloc(sizeof(Queue));
-    q->deque = deque_construct(destroy_fn);
+    q->deque = deque_construct(NULL);
     return q;
 }
 

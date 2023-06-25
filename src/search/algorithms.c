@@ -13,7 +13,9 @@ typedef struct{
 LabNode *_lab_node_construct(Celula cel, LabNode *prev){
     LabNode *labnode  = malloc(sizeof(LabNode));
     labnode->cel = cel;
-    labnode->anterior = prev;
+    labnode->anterior = (struct LabNode *)prev;
+
+    return labnode;
 }
 
 ResultData _default_result()
@@ -116,7 +118,7 @@ ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)
     LabNode *current = atual;
     while(current != NULL){
         stack_push(stack, current);
-        current = current->anterior;
+        current = (LabNode *)current->anterior;
     }
 
     while(!stack_empty(stack)){
@@ -155,7 +157,7 @@ ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)
     LabNode *current = atual;
     while(current != NULL){
         stack_push(stack, current);
-        current = current->anterior;
+        current = (LabNode *)current->anterior;
     }
 
     while(!stack_empty(stack)){

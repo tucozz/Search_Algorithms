@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "src/search/labirinto.h"
 #include "src/search/algorithms.h"
 
@@ -42,17 +43,29 @@ int main()
     Labirinto *lab;
 
     scanf("%s", arquivo_labirinto);
-    scanf("%d %d", &inicio.x, &inicio.y);
-    scanf("%d %d", &fim.x, &fim.y);
+    scanf("%d %d", &inicio.y, &inicio.x);
+    scanf("%d %d", &fim.y, &fim.x);
     scanf("\n%s", algoritmo);
 
     lab = labirinto_carregar(arquivo_labirinto);
 
-    //result = dummy_search(lab, inicio, fim);
-    result = breadth_first_search(lab, inicio, fim);
-    //result = depth_first_search(lab, inicio, fim);
-    //result = a_star(lab, inicio, fim);
+    if (!strcmp(algoritmo, "BFS"))
+        result = breadth_first_search(lab, inicio, fim);
+    else if (!strcmp(algoritmo, "DFS"))
+        result = depth_first_search(lab, inicio, fim);
+    else if (!strcmp(algoritmo, "A*"))
+        result = a_star(lab, inicio, fim);
+    else if (!strcmp(algoritmo, "DUMMY"))
+        result = dummy_search(lab, inicio, fim);
+    else
+    {
+        printf("Algoritmo desconhecido: %s\n", algoritmo);
+        exit(1);
+    }
+
     print_result(&result);
+
+    // descomente para visualizar informacoes de debug no labirinto
     mostra_caminho(lab, &result, inicio, fim);
 
     labirinto_destruir(lab);

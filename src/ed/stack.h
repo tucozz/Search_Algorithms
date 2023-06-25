@@ -6,7 +6,7 @@
 
 typedef struct Stack Stack;
 
-Stack *stack_construct(void(*destroy_fn)(data_type));
+Stack *stack_construct();
 void stack_push(Stack *stack, void *data);
 bool stack_empty(Stack *stack);
 void *stack_pop(Stack *stack);
