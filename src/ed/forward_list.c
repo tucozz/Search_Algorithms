@@ -130,8 +130,13 @@ data_type forward_list_pop_back(ForwardList *l)
     }
 
     data_type pop = n->value;
-    prev->next = NULL;
+    if(prev)
+        prev->next = NULL;
+    else
+        l->head = NULL;
     free(n);
+    l->size--;
+
     return pop;
 }
 
