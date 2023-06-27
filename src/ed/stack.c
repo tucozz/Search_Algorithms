@@ -13,7 +13,7 @@ Stack *stack_construct(){
 }
 
 void stack_push(Stack *stack, void *data){
-    deque_push_back(stack->deque, data);
+    deque_push_front(stack->deque, data);
 }
 
 bool stack_empty(Stack *stack){
@@ -21,7 +21,7 @@ bool stack_empty(Stack *stack){
 }
 
 void *stack_pop(Stack *stack){
-    void *pop = deque_pop_back(stack->deque);
+    void *pop = deque_pop_front(stack->deque);
     return pop;
 }
 

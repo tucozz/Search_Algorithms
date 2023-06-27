@@ -153,12 +153,13 @@ ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)
         }
         result.nos_expandidos++;
         labirinto_atribuir(l, atual->cel.y, atual->cel.x, EXPANDIDO);
-        atual = stack_pop(fronteira);
         if(stack_empty(fronteira))
             return _default_result();
         else
             atual = stack_pop(fronteira);
+        labirinto_atribuir(l, fim.y, fim.x, FIM);
     }
+    result.nos_expandidos++;
     result.sucesso = 1;
 
     Stack *stack = stack_construct(NULL);
@@ -166,15 +167,17 @@ ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)
     while(current != NULL){
         stack_push(stack, current);
         current = (LabNode *)current->anterior;
+        result.tamanho_caminho++;
     }
 
+    result.caminho = calloc(result.tamanho_caminho, sizeof(Celula));
+    int idx = 0;
     while(!stack_empty(stack)){
-        result.caminho[result.tamanho_caminho] = ((LabNode *)stack_pop(stack))->cel;
-        result.tamanho_caminho++;
+        result.caminho[idx++] = ((LabNode *)stack_pop(stack))->cel;
     }
     
     for(int i = 0; i < result.tamanho_caminho - 1; i++){
-        result.tamanho_caminho += _calcula_distancia(result.caminho[i], result.caminho[i+1]);
+        result.custo_caminho += _calcula_distancia(result.caminho[i], result.caminho[i+1]);
     }
     
     return result;
