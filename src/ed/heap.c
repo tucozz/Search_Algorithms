@@ -109,8 +109,7 @@ void *heap_push(Heap *heap, void *data, double priority){
     node.data = data;
     node.priority = priority;
 
-    heap->nodes[heap->size] = node;
-    heap->size++;
+    heap->nodes[heap->size++] = node;
 
     int hash_new_idx = _heapify(heap, heap->size - 1);
     int *int_ptr = malloc(sizeof(int));

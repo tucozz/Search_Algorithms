@@ -3,6 +3,7 @@
 #define _HEAP_H_
 
 #include "types.h"
+#include "hash.h"
 
 typedef struct Heap Heap;
 

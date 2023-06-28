@@ -141,13 +141,15 @@ ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
     Stack *expandidos = stack_construct(NULL);
     while (labirinto_obter(l, atual->cel.y, atual->cel.x) != FIM){
         //PARA DEBUG
-        //labirinto_print(l);
-        //printf("\n");
+        labirinto_print(l);
+        printf("\n");
         for(int i = 0; i < 8; i++){
             LabNode *node = _atualiza_fronteira(l, atual, i);
-            double funcao_f = node->custo_inicio + _calcula_distancia(node->cel, fim);
-            if(node)
+            double funcao_f = 0;
+            if(node){
+                funcao_f = node->custo_inicio + _calcula_distancia(node->cel, fim);
                 heap_push(fronteira, node, funcao_f);
+            }
         }
         result.nos_expandidos++;
         labirinto_atribuir(l, atual->cel.y, atual->cel.x, EXPANDIDO);
