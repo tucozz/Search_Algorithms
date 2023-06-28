@@ -6,16 +6,29 @@
 #include "../ed/stack.h"
 
 typedef struct{
+    double custo_inicio;
     Celula cel;
     struct LabNode *anterior;
 }LabNode;
 
+double _calcula_distancia(Celula cel1, Celula cel2){
+    return sqrt(pow(cel1.x - cel2.x, 2) + pow(cel1.y - cel2.y, 2));
+}
+
 LabNode *_lab_node_construct(Celula cel, LabNode *prev){
     LabNode *labnode  = malloc(sizeof(LabNode));
+    if(prev)
+        labnode->custo_inicio = prev->custo_inicio + _calcula_distancia(cel, prev->cel);
+    else
+        labnode->custo_inicio = 0;
     labnode->cel = cel;
     labnode->anterior = (struct LabNode *)prev;
 
     return labnode;
+}
+
+void _lab_node_destroy(LabNode *node){
+    free(node);
 }
 
 ResultData _default_result()
@@ -38,10 +51,6 @@ int _is_valid(Labirinto *l, Celula atual){
         return 0;
 
     return 1;
-}
-
-double _calcula_distancia(Celula cel1, Celula cel2){
-    return sqrt(pow(cel1.x - cel2.x, 2) + pow(cel1.y - cel2.y, 2));
 }
 
 LabNode *_atualiza_fronteira(Labirinto *l, LabNode *node, int idx){
@@ -101,7 +110,11 @@ ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)
 
     LabNode *atual = _lab_node_construct(inicio, NULL);
     Queue *fronteira = queue_construct(NULL);
+    Stack *expandidos = stack_construct(NULL);
     while (labirinto_obter(l, atual->cel.y, atual->cel.x) != FIM){
+        //PARA DEBUG
+        //labirinto_print(l);
+        //printf("\n");
         for(int i = 0; i < 8; i++){
             LabNode *node = _atualiza_fronteira(l, atual, i);
             if(node)
@@ -109,14 +122,32 @@ ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)
         }
         result.nos_expandidos++;
         labirinto_atribuir(l, atual->cel.y, atual->cel.x, EXPANDIDO);
-        if(queue_empty(fronteira))
+        stack_push(expandidos, atual);
+        if(queue_empty(fronteira)){
+            //libera os nos expandidos
+            while(!stack_empty(expandidos)){
+                LabNode *pop = (LabNode *)stack_pop(expandidos);
+                _lab_node_destroy(pop); 
+            }
+            stack_destroy(expandidos);
+
+            //libera a fronteira
+            while(!queue_empty(fronteira)){
+                LabNode *pop = (LabNode *)queue_pop(fronteira);
+                _lab_node_destroy(pop); 
+            }
+            queue_destroy(fronteira);
+
             return _default_result();
+        }
         else
             atual = queue_pop(fronteira);
         labirinto_atribuir(l, fim.y, fim.x, FIM);
     }
     result.nos_expandidos++;
+    stack_push(expandidos, atual);
     result.sucesso = 1;
+    result.custo_caminho = atual->custo_inicio;
 
     Stack *stack = stack_construct(NULL);
     LabNode *current = atual;
@@ -126,15 +157,27 @@ ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)
         result.tamanho_caminho++;
     }
 
+    //identifica o caminho principal
     result.caminho = calloc(result.tamanho_caminho, sizeof(Celula));
     int idx = 0;
     while(!stack_empty(stack)){
         result.caminho[idx++] = ((LabNode *)stack_pop(stack))->cel;
     }
-    
-    for(int i = 0; i < result.tamanho_caminho - 1; i++){
-        result.custo_caminho += _calcula_distancia(result.caminho[i], result.caminho[i+1]);
+    stack_destroy(stack);
+
+    //libera os nos expandidos
+    while(!stack_empty(expandidos)){
+        LabNode *pop = (LabNode *)stack_pop(expandidos);
+        _lab_node_destroy(pop); 
     }
+    stack_destroy(expandidos);
+
+    //libera a fronteira
+    while(!queue_empty(fronteira)){
+        LabNode *pop = (LabNode *)queue_pop(fronteira);
+        _lab_node_destroy(pop); 
+    }
+    queue_destroy(fronteira);
     
     return result;
 }
@@ -161,6 +204,7 @@ ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)
     }
     result.nos_expandidos++;
     result.sucesso = 1;
+    result.custo_caminho = atual->custo_inicio;
 
     Stack *stack = stack_construct(NULL);
     LabNode *current = atual;
@@ -170,16 +214,23 @@ ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)
         result.tamanho_caminho++;
     }
 
+    //libera o caminho principal enquanto o identifica
     result.caminho = calloc(result.tamanho_caminho, sizeof(Celula));
     int idx = 0;
     while(!stack_empty(stack)){
-        result.caminho[idx++] = ((LabNode *)stack_pop(stack))->cel;
+        LabNode *pop = (LabNode *)stack_pop(stack);
+        result.caminho[idx++] = pop->cel;
+        _lab_node_destroy(pop); 
     }
-    
-    for(int i = 0; i < result.tamanho_caminho - 1; i++){
-        result.custo_caminho += _calcula_distancia(result.caminho[i], result.caminho[i+1]);
+    stack_destroy(stack);
+
+    //libera a fronteira
+    while(!stack_empty(fronteira)){
+        LabNode *pop = (LabNode *)stack_pop(fronteira);
+        _lab_node_destroy(pop); 
     }
-    
+    stack_destroy(fronteira);
+
     return result;
 }
 
