@@ -139,7 +139,7 @@ ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
     HashTable *heap_hash = hash_table_construct(383, _lab_node_hash, _lab_node_cmp);
     Heap *fronteira = heap_construct(heap_hash);
     Stack *expandidos = stack_construct(NULL);
-    while (labirinto_obter(l, atual->cel.y, atual->cel.x) != FIM){
+    while (atual->cel.y != fim.y || atual->cel.x != fim.y){
         //PARA DEBUG
         labirinto_print(l);
         printf("\n");
@@ -183,7 +183,6 @@ ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
         }
         else
             atual = heap_pop(fronteira);
-        labirinto_atribuir(l, fim.y, fim.x, FIM);
     }
     result.nos_expandidos++;
     stack_push(expandidos, atual);
@@ -238,10 +237,10 @@ ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)
     LabNode *atual = _lab_node_construct(inicio, NULL);
     Queue *fronteira = queue_construct(NULL);
     Stack *expandidos = stack_construct(NULL);
-    while (labirinto_obter(l, atual->cel.y, atual->cel.x) != FIM){
+    while (atual->cel.y != fim.y || atual->cel.x != fim.y){
         //PARA DEBUG
-        //labirinto_print(l);
-        //printf("\n");
+        labirinto_print(l);
+        printf("\n");
         for(int i = 0; i < 8; i++){
             LabNode *node = _atualiza_fronteira(l, atual, i);
             if(node)
@@ -270,7 +269,6 @@ ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)
         }
         else
             atual = queue_pop(fronteira);
-        labirinto_atribuir(l, fim.y, fim.x, FIM);
     }
     result.nos_expandidos++;
     stack_push(expandidos, atual);
@@ -317,7 +315,10 @@ ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)
     LabNode *atual = _lab_node_construct(inicio, NULL);
     Stack *fronteira = stack_construct(NULL);
     Stack *expandidos = stack_construct(NULL);
-    while (labirinto_obter(l, atual->cel.y, atual->cel.x) != FIM){
+    while (atual->cel.y != fim.y || atual->cel.x != fim.x){
+        //PARA DEBUG
+        labirinto_print(l);
+        printf("\n");
         for(int i = 0; i < 8; i++){
             LabNode *node = _atualiza_fronteira(l, atual, i);
             if(node)
@@ -346,7 +347,6 @@ ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)
         }
         else
             atual = stack_pop(fronteira);
-        labirinto_atribuir(l, fim.y, fim.x, FIM);
     }
     result.nos_expandidos++;
     stack_push(expandidos, atual);
