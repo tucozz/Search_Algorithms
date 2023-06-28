@@ -83,7 +83,8 @@ void *heap_push(Heap *heap, void *data, double priority){
     //checa pra ver se o valor ja existe
     void *old = hash_table_get(heap->hash, data);
 
-    //se ja existir, atualiza o valor e ajeita o heap (pra cima ou pra baixo)
+    //se ja existir, atualiza o valor e ajeita o heap
+    //esse heap vai apenas atualizar se o valor for menor do que o atual. descomente o else if para que ele atualize tambem.
     if(old){
         if(heap->nodes[*(int *)old].priority > priority){
             heap->nodes[*(int *)old].priority = priority;
@@ -91,8 +92,8 @@ void *heap_push(Heap *heap, void *data, double priority){
         }
             
         else if(heap->nodes[*(int *)old].priority < priority){
-            heap->nodes[*(int *)old].priority = priority;
-            _heapify_down(heap, *(int *)old);
+            //heap->nodes[*(int *)old].priority = priority;
+            //_heapify_down(heap, *(int *)old);
         }
 
         //retorna o void *data que foi enviado para que ele possa ser desalocado
