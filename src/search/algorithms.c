@@ -4,12 +4,32 @@
 #include "algorithms.h"
 #include "../ed/queue.h"
 #include "../ed/stack.h"
+#include "../ed/heap.h"
+#include "../ed/hash.h"
 
 typedef struct{
     double custo_inicio;
     Celula cel;
     struct LabNode *anterior;
 }LabNode;
+
+int celula_hash(HashTable *h, void *key)
+{
+    Celula *c = (Celula *)key;
+    // 83 e 97 sao primos e o operador "^" é o XOR bit a bit
+    return ((c->x * 83) ^ (c->y * 97)) % hash_table_size(h);
+}
+
+int celula_cmp(void *c1, void *c2)
+{
+    Celula *a = (Celula *)c1;
+    Celula *b = (Celula *)c2;
+
+    if (a->x == b->x && a->y == b->y)
+        return 0;
+    else
+        return 1;
+}
 
 double _calcula_distancia(Celula cel1, Celula cel2){
     return sqrt(pow(cel1.x - cel2.x, 2) + pow(cel1.y - cel2.y, 2));
@@ -100,8 +120,100 @@ LabNode *_atualiza_fronteira(Labirinto *l, LabNode *node, int idx){
 
 ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
 {
-    // TODO!
-    return _default_result();
+    ResultData result = _default_result();
+
+    LabNode *atual = _lab_node_construct(inicio, NULL);
+    HashTable *heap_hash = hash_table_construct(383, celula_hash, celula_cmp);
+    Heap *fronteira = heap_construct(heap_hash);
+    Stack *expandidos = stack_construct(NULL);
+    while (labirinto_obter(l, atual->cel.y, atual->cel.x) != FIM){
+        //PARA DEBUG
+        //labirinto_print(l);
+        //printf("\n");
+        for(int i = 0; i < 8; i++){
+            LabNode *node = _atualiza_fronteira(l, atual, i);
+            double funcao_f = node->custo_inicio + _calcula_distancia(node->cel, fim);
+            if(node)
+                heap_push(fronteira, node, funcao_f);
+        }
+        result.nos_expandidos++;
+        labirinto_atribuir(l, atual->cel.y, atual->cel.x, EXPANDIDO);
+        stack_push(expandidos, atual);
+        if(queue_empty(fronteira)){
+            //limpa tudo antes de ir embora
+            //libera os nos expandidos
+            while(!stack_empty(expandidos)){
+                LabNode *pop = (LabNode *)stack_pop(expandidos);
+                _lab_node_destroy(pop); 
+            }
+            stack_destroy(expandidos);
+
+            //libera a fronteira
+            HashTableIterator *it = hash_table_iterator(heap_hash);
+
+            while (!hash_table_iterator_is_over(it))
+            {
+                HashTableItem *item = hash_table_iterator_next(it);
+                Celula *cel = (Celula *)item->key;
+                int *pos = (int *)item->val;
+                celula_destroy(cel);
+                free(pos);
+            }
+
+            hash_table_iterator_destroy(it);
+            hash_table_destroy(heap_hash);
+            heap_destroy(fronteira);
+
+            return _default_result();
+        }
+        else
+            atual = heap_pop(fronteira);
+        labirinto_atribuir(l, fim.y, fim.x, FIM);
+    }
+    result.nos_expandidos++;
+    stack_push(expandidos, atual);
+    result.sucesso = 1;
+    result.custo_caminho = atual->custo_inicio;
+
+    //identifica o caminho principal
+    Stack *stack = stack_construct(NULL);
+    LabNode *current = atual;
+    while(current != NULL){
+        stack_push(stack, current);
+        current = (LabNode *)current->anterior;
+        result.tamanho_caminho++;
+    }
+    result.caminho = calloc(result.tamanho_caminho, sizeof(Celula));
+    int idx = 0;
+    while(!stack_empty(stack)){
+        result.caminho[idx++] = ((LabNode *)stack_pop(stack))->cel;
+    }
+    stack_destroy(stack);
+
+    //libera os nos expandidos
+    while(!stack_empty(expandidos)){
+        LabNode *pop = (LabNode *)stack_pop(expandidos);
+        _lab_node_destroy(pop); 
+    }
+    stack_destroy(expandidos);
+
+    //libera a fronteira
+    HashTableIterator *it = hash_table_iterator(heap_hash);
+
+    while (!hash_table_iterator_is_over(it))
+    {
+        HashTableItem *item = hash_table_iterator_next(it);
+        Celula *cel = (Celula *)item->key;
+        int *pos = (int *)item->val;
+        celula_destroy(cel);
+        free(pos);
+    }
+
+    hash_table_iterator_destroy(it);
+    hash_table_destroy(heap_hash);
+    heap_destroy(fronteira);
+    
+    return result;
 }
 
 ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)

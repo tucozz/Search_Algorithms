@@ -6,7 +6,7 @@
 
 typedef struct Heap Heap;
 
-Heap *heap_construct();
+Heap *heap_construct(HashTable *hash);
 void *heap_push(Heap *heap, void *data, double priority);
 bool heap_empty(Heap *heap);
 void *heap_min(Heap *heap);
