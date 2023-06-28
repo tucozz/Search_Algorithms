@@ -13,19 +13,32 @@ typedef struct{
     struct LabNode *anterior;
 }LabNode;
 
-int celula_hash(HashTable *h, void *key)
+Celula *celula_create(int x, int y)
 {
-    Celula *c = (Celula *)key;
-    // 83 e 97 sao primos e o operador "^" é o XOR bit a bit
-    return ((c->x * 83) ^ (c->y * 97)) % hash_table_size(h);
+    Celula *c = malloc(sizeof(Celula));
+    c->x = x;
+    c->y = y;
+    return c;
 }
 
-int celula_cmp(void *c1, void *c2)
+void celula_destroy(Celula *c)
 {
-    Celula *a = (Celula *)c1;
-    Celula *b = (Celula *)c2;
+    free(c);
+}
 
-    if (a->x == b->x && a->y == b->y)
+int _lab_node_hash(HashTable *h, void *key)
+{
+    Celula c = ((LabNode *)key)->cel;
+    // 83 e 97 sao primos e o operador "^" é o XOR bit a bit
+    return ((c.x * 83) ^ (c.y * 97)) % hash_table_size(h);
+}
+
+int _lab_node_cmp(void *c1, void *c2)
+{
+    Celula a = ((LabNode *)c1)->cel;
+    Celula b = ((LabNode *)c2)->cel;
+
+    if (a.x == b.x && a.y == b.y)
         return 0;
     else
         return 1;
@@ -123,7 +136,7 @@ ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
     ResultData result = _default_result();
 
     LabNode *atual = _lab_node_construct(inicio, NULL);
-    HashTable *heap_hash = hash_table_construct(383, celula_hash, celula_cmp);
+    HashTable *heap_hash = hash_table_construct(383, _lab_node_hash, _lab_node_cmp);
     Heap *fronteira = heap_construct(heap_hash);
     Stack *expandidos = stack_construct(NULL);
     while (labirinto_obter(l, atual->cel.y, atual->cel.x) != FIM){
@@ -139,7 +152,7 @@ ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
         result.nos_expandidos++;
         labirinto_atribuir(l, atual->cel.y, atual->cel.x, EXPANDIDO);
         stack_push(expandidos, atual);
-        if(queue_empty(fronteira)){
+        if(heap_empty(fronteira)){
             //limpa tudo antes de ir embora
             //libera os nos expandidos
             while(!stack_empty(expandidos)){
@@ -154,9 +167,9 @@ ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
             while (!hash_table_iterator_is_over(it))
             {
                 HashTableItem *item = hash_table_iterator_next(it);
-                Celula *cel = (Celula *)item->key;
+                LabNode *node = (LabNode *)item->key;
                 int *pos = (int *)item->val;
-                celula_destroy(cel);
+                _lab_node_destroy(node);
                 free(pos);
             }
 
@@ -203,9 +216,9 @@ ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
     while (!hash_table_iterator_is_over(it))
     {
         HashTableItem *item = hash_table_iterator_next(it);
-        Celula *cel = (Celula *)item->key;
+        LabNode *node = (LabNode *)item->key;
         int *pos = (int *)item->val;
-        celula_destroy(cel);
+        _lab_node_destroy(node);
         free(pos);
     }
 
