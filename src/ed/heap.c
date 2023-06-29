@@ -103,7 +103,7 @@ void *heap_push(Heap *heap, void *data, double priority){
     //se o valor não existir, insere normalmente no final e faz heapify
     if(heap->size == heap->capacity){
         heap->capacity = 2*heap->capacity;
-        realloc(heap->nodes, heap->capacity);
+        heap->nodes = (HeapNode *)realloc(heap->nodes, heap->capacity*sizeof(HeapNode));
     }
     HeapNode node;
     node.data = data;
@@ -135,16 +135,17 @@ void *heap_pop(Heap *heap){
     free(hash_pop);
 
     heap->nodes[0] = heap->nodes[heap->size];
+    heap->nodes[heap->size].data = NULL;
+    heap->nodes[heap->size].priority = 0;
     int *zero = malloc(sizeof(int));
     *zero = 0;
-    int deletazero = 1;
     if(hash_table_num_elems(heap->hash) != 0){
         void *prev = hash_table_set(heap->hash, heap->nodes[0].data, zero);
-        deletazero = 0;
         free(prev);
     }
-    if(deletazero)
+    else
         free(zero);
+
     _heapify_down(heap, 0);
     return pop;
 }

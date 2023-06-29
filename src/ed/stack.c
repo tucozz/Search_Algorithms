@@ -1,5 +1,6 @@
 #include "stack.h"
 #include "deque.h"
+#include "types.h"
 #include <stdlib.h>
 
 struct Stack{

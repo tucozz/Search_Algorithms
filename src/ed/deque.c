@@ -9,7 +9,7 @@ struct Deque{
 
 // criacao do deque
 Deque *deque_construct(void(*destroy_fn)(data_type)){
-    Deque *deque = malloc(sizeof(deque));
+    Deque *deque = malloc(sizeof(Deque));
     deque->destroy_fn = destroy_fn;
     deque->list = forward_list_construct();
 
