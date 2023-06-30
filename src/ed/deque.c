@@ -81,8 +81,13 @@ static void _centraliza_mapa(Deque *d){
 }
 
 void deque_push_front(Deque *d, data_type data){
+    //tenha certeza de que existe alguma coisa aqui
+    if(d->map[d->bloco_inicial] == NULL)
+        d->map[d->bloco_inicial] = calloc(d->tamanho_bloco, sizeof(data_type));
+        
+    
     // Verifica se o deque está vazio
-    if (d->inicio == d->fim && d->map[d->bloco_inicial][d->inicio] == NULL) {
+    if (deque_size(d) == 0) {
         d->map[d->bloco_inicial][d->inicio] = data;
         d->fim++;
         return;
@@ -113,13 +118,6 @@ void deque_push_front(Deque *d, data_type data){
 }
 
 void deque_push_back(Deque *d, data_type data){
-    // Verifica se o deque está vazio
-    if (d->inicio == d->fim && d->map[d->bloco_final][d->inicio] == NULL) {
-        d->map[d->bloco_final][d->fim] = data;
-        d->fim++;
-        return;
-    }
-    
     // Verifica se é necessário alocar um novo bloco no final
     if (d->fim == 0) {
         if (d->bloco_inicial == 0) {
@@ -128,20 +126,24 @@ void deque_push_back(Deque *d, data_type data){
         }
         
         // Aloca um novo bloco no final
-        d->bloco_final++;
         d->map[d->bloco_final] = calloc(d->tamanho_bloco, sizeof(data_type));
+    }
+
+    d->map[d->bloco_final][d->fim] = data;
+
+    // Insere o novo elemento no final do deque
+    //verifica se o fim precisa mudar de bloco
+    if(d->fim == d->tamanho_bloco - 1){
+        d->bloco_final++;
         d->fim = 0;
     }
-    
-    // Insere o novo elemento no final do deque
-    // E atualiza o prox disponível
-    d->map[d->bloco_final][d->fim] = data;
-    d->fim++;
+    else
+        d->fim++;
 }
 
 data_type deque_pop_back(Deque *d){
     //verifica se está vazio
-    if (d->inicio == d->fim && d->map[d->bloco_final][d->inicio] == NULL) {
+    if (deque_size(d) == 0) {
         exit(printf("ERRO: DEQUE VAZIO\n"));
     }
 
@@ -170,7 +172,7 @@ data_type deque_pop_back(Deque *d){
 
 data_type deque_pop_front(Deque *d){
     //verifica se está vazio
-    if (d->inicio == d->fim && d->map[d->bloco_final][d->inicio] == NULL) {
+    if (deque_size(d) == 0) {
         exit(printf("ERRO: DEQUE VAZIO\n"));
     }
 
