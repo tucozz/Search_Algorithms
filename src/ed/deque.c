@@ -39,7 +39,7 @@ static void _map_destroy(Deque *d){
             idx_fim = d->fim;
 
         //vai destruindo todos os itens dentro do bloco
-        for(int j = idx_init; j <= idx_fim; i++){
+        for(int j = idx_init; j <= idx_fim; j++){
             //d->destroy_fn(d->map[i][j]);
         }
         //ao acabar, libera o ponteiro para o bloco
@@ -84,6 +84,7 @@ void deque_push_front(Deque *d, data_type data){
     // Verifica se o deque está vazio
     if (d->inicio == d->fim && d->map[d->bloco_inicial][d->inicio] == NULL) {
         d->map[d->bloco_inicial][d->inicio] = data;
+        d->fim++;
         return;
     }
     
@@ -152,14 +153,16 @@ data_type deque_pop_back(Deque *d){
         novo_fim = d->tamanho_bloco - 1;
     }
     else
-        novo_fim ++;
+        novo_fim--;
         
     data_type pop = d->map[novo_bloco][novo_fim];
-    //d->destroy_fn(d->map[novo_bloco][novo_fim]);
+    d->map[novo_bloco][novo_fim] = NULL;
     
     d->fim = novo_fim;
-    if(d->fim == 0)
+    if(d->fim == 0 && deque_size(d)){
         free(d->map[d->bloco_final]);
+        d->map[d->bloco_final] = NULL;
+    }
     d->bloco_final = novo_bloco;
         
     return pop;
@@ -172,10 +175,11 @@ data_type deque_pop_front(Deque *d){
     }
 
     data_type pop = d->map[d->bloco_inicial][d->inicio];
-    //d->destroy_fn(d->map[d->bloco_inicial][d->inicio]);
+    d->map[d->bloco_inicial][d->inicio] = NULL;
     
-    if(d->inicio == d->tamanho_bloco - 1){
+    if(d->inicio == d->tamanho_bloco - 1 && deque_size(d)){
         free(d->map[d->bloco_inicial]);
+        d->map[d->bloco_inicial] = NULL;
         d->bloco_inicial++;
         d->inicio = -1;
     }
