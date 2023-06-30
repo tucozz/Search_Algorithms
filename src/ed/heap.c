@@ -56,7 +56,9 @@ static int _heapify_down(Heap *h, int idx_init){
     while(node_idx_right_child(current) < h->size && (h->nodes[node_idx_left_child(current)].priority < h->nodes[current].priority
                             || h->nodes[node_idx_right_child(current)].priority < h->nodes[current].priority)){
 
-        if(h->nodes[node_idx_left_child(current)].priority < h->nodes[node_idx_right_child(current)].priority){
+        if(h->nodes[node_idx_left_child(current)].priority < h->nodes[node_idx_right_child(current)].priority ||
+                (h->nodes[node_idx_left_child(current)].priority == h->nodes[node_idx_right_child(current)].priority &&
+                h->nodes[node_idx_left_child(current)].priority < h->nodes[current].priority)){
             _heapify_idx_swap(h, node_idx_left_child(current), current);
             current = node_idx_left_child(current);
         }

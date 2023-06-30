@@ -86,6 +86,54 @@ int _is_valid(Labirinto *l, Celula atual){
     return 1;
 }
 
+LabNode *_atualiza_fronteira_heap(Labirinto *l, LabNode *node, HashTable *hash, int idx){
+    Celula cel = node->cel;
+    
+    switch (idx)
+    {
+    case 0:
+        cel.y -= 1;
+        break;
+    case 1:
+        cel.y -=1;
+        cel.x +=1;
+        break;
+    case 2:
+        cel.x +=1;
+        break;
+    case 3:
+        cel.x +=1;
+        cel.y +=1;
+        break;
+    case 4:
+        cel.y +=1;
+        break;
+    case 5:
+        cel.x -=1;
+        cel.y +=1;
+        break;
+    case 6:
+        cel.x -=1;
+        break;
+    case 7:
+        cel.x -=1;
+        cel.y -=1;
+        break;
+    default:
+        printf("IDX INVALIDO.\n");
+    }
+
+    void *existe = hash_table_get(hash, &cel);
+
+
+    if(!_is_valid(l, cel) && !existe)
+        return NULL;
+
+    labirinto_atribuir(l, cel.y, cel.x, FRONTEIRA);
+    LabNode *pop = _lab_node_construct(cel, node);
+    return pop;
+}
+
 LabNode *_atualiza_fronteira(Labirinto *l, LabNode *node, int idx){
     Celula cel = node->cel;
     
@@ -139,12 +187,12 @@ ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
     HashTable *heap_hash = hash_table_construct(383, _lab_node_hash, _lab_node_cmp);
     Heap *fronteira = heap_construct(heap_hash);
     Stack *expandidos = stack_construct(NULL);
-    while (atual->cel.y != fim.y || atual->cel.x != fim.y){
+    while (atual->cel.y != fim.y || atual->cel.x != fim.x){
         //PARA DEBUG
-        labirinto_print(l);
-        printf("\n");
+        //labirinto_print(l);
+        //printf("\n");
         for(int i = 0; i < 8; i++){
-            LabNode *node = _atualiza_fronteira(l, atual, i);
+            LabNode *node = _atualiza_fronteira_heap(l, atual, heap_hash , i);
             double funcao_f = 0;
             if(node){
                 funcao_f = node->custo_inicio + _calcula_distancia(node->cel, fim);
@@ -239,8 +287,8 @@ ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)
     Stack *expandidos = stack_construct(NULL);
     while (atual->cel.y != fim.y || atual->cel.x != fim.y){
         //PARA DEBUG
-        labirinto_print(l);
-        printf("\n");
+        //labirinto_print(l);
+        //printf("\n");
         for(int i = 0; i < 8; i++){
             LabNode *node = _atualiza_fronteira(l, atual, i);
             if(node)
@@ -317,8 +365,8 @@ ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)
     Stack *expandidos = stack_construct(NULL);
     while (atual->cel.y != fim.y || atual->cel.x != fim.x){
         //PARA DEBUG
-        labirinto_print(l);
-        printf("\n");
+        //labirinto_print(l);
+        //printf("\n");
         for(int i = 0; i < 8; i++){
             LabNode *node = _atualiza_fronteira(l, atual, i);
             if(node)
