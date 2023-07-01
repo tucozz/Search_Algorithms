@@ -43,8 +43,9 @@ static int _heapify(Heap *h, int idx_init){
     
     int current = idx_init;
     while(current != 0 && h->nodes[node_idx_parent(current)].priority > h->nodes[current].priority){
-        _heapify_idx_swap(h, current, node_idx_parent(current));
-        current = node_idx_parent(current);
+        int idx_parent = node_idx_parent(current);
+        _heapify_idx_swap(h, current, idx_parent);
+        current = idx_parent;
     }
 
     return current;
@@ -53,9 +54,15 @@ static int _heapify(Heap *h, int idx_init){
 static int _heapify_down(Heap *h, int idx_init){
     int current = idx_init;
 
-    while(node_idx_right_child(current) < h->size && (h->nodes[node_idx_left_child(current)].priority < h->nodes[current].priority
-                            || h->nodes[node_idx_right_child(current)].priority < h->nodes[current].priority)){
+    while((node_idx_left_child(current) < h->size && h->nodes[node_idx_left_child(current)].priority < h->nodes[current].priority)
+        ||(node_idx_right_child(current) < h->size && h->nodes[node_idx_right_child(current)].priority < h->nodes[current].priority)){
 
+        if(node_idx_right_child(current) >= h->size){
+            _heapify_idx_swap(h, node_idx_left_child(current), current);
+            current = node_idx_left_child(current);
+            return current;
+        }
+        
         if(h->nodes[node_idx_left_child(current)].priority < h->nodes[node_idx_right_child(current)].priority ||
                 (h->nodes[node_idx_left_child(current)].priority == h->nodes[node_idx_right_child(current)].priority &&
                 h->nodes[node_idx_left_child(current)].priority < h->nodes[current].priority)){
@@ -113,10 +120,10 @@ void *heap_push(Heap *heap, void *data, double priority){
 
     heap->nodes[heap->size++] = node;
 
-    int hash_new_idx = _heapify(heap, heap->size - 1);
     int *int_ptr = malloc(sizeof(int));
-    *int_ptr = hash_new_idx;
+    *int_ptr = heap->size - 1;
     void *prev = hash_table_set(heap->hash, data, int_ptr);
+    _heapify(heap, heap->size - 1);
     if(prev)
         free(prev);
 
