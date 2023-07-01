@@ -29,6 +29,8 @@ Deque *deque_construct(){
 static void _map_destroy(Deque *d){
     //seleciona um a um os blocos alocados
     for(int i = d->bloco_inicial; i <= d->bloco_final; i++){
+        if(i == d->bloco_final && d->fim == 0)
+            break;
         int idx_init = 0;
         int idx_fim = d->tamanho_bloco - 1;
 
@@ -56,38 +58,34 @@ void deque_destroy(Deque *d){
 
 static void _centraliza_mapa(Deque *d){
     //verifica se o mapa centralizado tem que ser maior do que o atual
-    int novo_tamanho = d->tamanho_mapa;
-    if(d->bloco_final >= d->tamanho_mapa - 1 || d->bloco_inicial == 0)
-        novo_tamanho = d->tamanho_mapa * 2;
+    if(d->bloco_final >= d->tamanho_mapa - 1 && d->bloco_inicial == 0)
+        d->tamanho_mapa = d->tamanho_mapa * 2;
                 
-    data_type **novo_mapa = calloc(novo_tamanho, sizeof(data_type *));
+    data_type **novo_mapa = calloc(d->tamanho_mapa, sizeof(data_type *));
             
     //seleciona qual deve ser o inicio para que o mapa fique centralizado
-    int meio_atual = ((d->bloco_final - d->bloco_inicial) / 2) + d->bloco_inicial;
-    int novo_meio = novo_tamanho / 2;
-    int novo_inicio = novo_meio - ((d->bloco_final - d->bloco_inicial) / 2);
+    int novo_inicio = (d->tamanho_mapa - (d->bloco_final - d->bloco_inicial))/2;
 
     // Desloca os blocos existentes para a nova posição no mapa
     for (int i = d->bloco_inicial, j = novo_inicio; i <= d->bloco_final; i++, j++) {
-        novo_mapa[j] = d->map[i];
+        if(!(i == d->bloco_final && d->fim == 0))
+            novo_mapa[j] = d->map[i];
     }
             
     // Atualiza os ponteiros do deque
     d->bloco_final = novo_inicio + (d->bloco_final - d->bloco_inicial);
     d->bloco_inicial = novo_inicio;
-    d->tamanho_mapa = novo_tamanho;
-    _map_destroy(d);
+    free(d->map);
     d->map = novo_mapa;
 }
 
 void deque_push_front(Deque *d, data_type data){
-    //tenha certeza de que existe alguma coisa aqui
-    if(d->map[d->bloco_inicial] == NULL)
-        d->map[d->bloco_inicial] = calloc(d->tamanho_bloco, sizeof(data_type));
-        
-    
     // Verifica se o deque está vazio
     if (deque_size(d) == 0) {
+        d->map[d->tamanho_mapa/2] = calloc(d->tamanho_bloco, sizeof(data_type));
+        d->bloco_final = d->bloco_inicial = d->tamanho_mapa/2;
+        d->inicio = d->fim = 0;
+
         d->map[d->bloco_inicial][d->inicio] = data;
         d->fim++;
         return;
@@ -118,10 +116,15 @@ void deque_push_front(Deque *d, data_type data){
 }
 
 void deque_push_back(Deque *d, data_type data){
+    if(deque_size(d) == 0){
+        d->bloco_final = d->bloco_inicial = d->tamanho_mapa/2;
+        d->inicio = d->fim = 0;
+    }
+
     // Verifica se é necessário alocar um novo bloco no final
     if (d->fim == 0) {
-        if (d->bloco_inicial == 0) {
-            // É necessário realocar o mapa para acomodar mais blocos
+        if (d->bloco_final == d->tamanho_mapa) {
+            // É necessário reajustar o mapa (ou realocar)
             _centraliza_mapa(d);
         }
         

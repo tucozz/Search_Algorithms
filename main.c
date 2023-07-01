@@ -37,7 +37,8 @@ int main()
         if (!strcmp(cmd, "PUSH_BACK"))
         {
             scanf("%d %d", &x, &y);
-            deque_push_back(d, celula_construct(x, y));
+            Celula *celula = celula_construct(x, y);
+            deque_push_back(d, celula);
         }
         else if (!strcmp(cmd, "PUSH_FRONT"))
         {
