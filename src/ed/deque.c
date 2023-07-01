@@ -49,9 +49,12 @@ static void _map_destroy(Deque *d){
             }
             //ao acabar, libera o ponteiro para o bloco
             free(d->map[i]);
+            d->map[i] = NULL;
         }
     }
     //e por fim libera o mapa
+    if(d->map[d->bloco_inicial] != NULL)
+        free(d->map[d->bloco_inicial]);
     free(d->map);
 }
 
@@ -210,7 +213,7 @@ data_type deque_pop_front(Deque *d){
         d->bloco_inicial++;
         d->inicio = -1;
         if(d->bloco_inicial == d->tamanho_mapa){
-            if(d->map[d->bloco_inicial]){
+            if(d->map[d->bloco_inicial] != NULL){
                 free(d->map[d->bloco_inicial]);
                 d->map[d->bloco_inicial] = NULL;
             }
@@ -219,6 +222,15 @@ data_type deque_pop_front(Deque *d){
         }
     }
     d->inicio++;
+
+    if(deque_size(d) == 0){
+        if(d->map[d->bloco_inicial]){
+            free(d->map[d->bloco_inicial]);
+            d->map[d->bloco_inicial] = NULL;
+        }
+        d->bloco_final = d->bloco_inicial = d->tamanho_mapa/2;
+        d->inicio = d->fim = 0;
+    }
         
     return pop;
 }
