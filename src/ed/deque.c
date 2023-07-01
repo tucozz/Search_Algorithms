@@ -29,25 +29,27 @@ Deque *deque_construct(Destroy_fn destroy_fn){
 }
 
 static void _map_destroy(Deque *d){
-    //seleciona um a um os blocos alocados
-    for(int i = d->bloco_inicial; i <= d->bloco_final; i++){
-        if(i == d->bloco_final && d->fim == 0 && d->bloco_final != d->bloco_inicial)
-            break;
-        int idx_init = 0;
-        int idx_fim = d->tamanho_bloco - 1;
+    if(deque_size(d)){
+        //seleciona um a um os blocos alocados
+        for(int i = d->bloco_inicial; i <= d->bloco_final; i++){
+            if(i == d->bloco_final && d->fim == 0 && d->bloco_final != d->bloco_inicial)
+                break;
+            int idx_init = 0;
+            int idx_fim = d->tamanho_bloco - 1;
 
-        //confere se o bloco ta cheio ou se deve começar / terminar de outro lugar
-        if(i == d->bloco_inicial)
-            idx_init = d->inicio;
-        if(i == d->bloco_final)
-            idx_fim = d->fim;
+            //confere se o bloco ta cheio ou se deve começar / terminar de outro lugar
+            if(i == d->bloco_inicial)
+                idx_init = d->inicio;
+            if(i == d->bloco_final)
+                idx_fim = d->fim;
 
-        //vai destruindo todos os itens dentro do bloco
-        for(int j = idx_init; j <= idx_fim; j++){
-            d->destroy_fn(d->map[i][j]);
+            //vai destruindo todos os itens dentro do bloco
+            for(int j = idx_init; j <= idx_fim; j++){
+                d->destroy_fn(d->map[i][j]);
+            }
+            //ao acabar, libera o ponteiro para o bloco
+            free(d->map[i]);
         }
-        //ao acabar, libera o ponteiro para o bloco
-        free(d->map[i]);
     }
     //e por fim libera o mapa
     free(d->map);
@@ -198,6 +200,10 @@ data_type deque_pop_front(Deque *d){
         d->map[d->bloco_inicial] = NULL;
         d->bloco_inicial++;
         d->inicio = -1;
+        if(d->bloco_inicial == d->tamanho_mapa){
+            d->bloco_final = d->bloco_inicial = d->tamanho_mapa/2;
+            d->fim = 0;
+        }
     }
     d->inicio++;
         

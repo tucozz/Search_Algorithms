@@ -17,16 +17,16 @@ Celula *celula_construct(int x, int y)
     return c;
 }
 
-void celula_free(Celula *c)
+void celula_free(void *celula)
 {
-    free(c);
+    free(celula);
 }
 
 int main()
 {
     int i, n, x, y;
     char cmd[10];
-    Deque *d = deque_construct();
+    Deque *d = deque_construct(celula_free);
 
     scanf("%d", &n);
 
