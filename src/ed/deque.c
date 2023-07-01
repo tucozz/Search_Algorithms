@@ -4,6 +4,7 @@
 
 struct Deque{
     data_type **map;
+    Destroy_fn destroy_fn;
     int bloco_inicial;
     int bloco_final;
     int tamanho_bloco;
@@ -12,13 +13,14 @@ struct Deque{
     int fim;
 };
 
-Deque *deque_construct(){
+Deque *deque_construct(Destroy_fn destroy_fn){
     Deque *d = (Deque *)malloc(sizeof(Deque));
 
+    d->destroy_fn = destroy_fn;
     d->tamanho_bloco = 5;
     d->tamanho_mapa = 5;
     d->map = calloc(d->tamanho_mapa, sizeof(data_type *));
-    d->map[d->tamanho_mapa/2] = calloc(d->tamanho_bloco, sizeof(data_type));
+    //d->map[d->tamanho_mapa/2] = calloc(d->tamanho_bloco, sizeof(data_type));
     d->bloco_final = d->bloco_inicial = d->tamanho_mapa/2;
     d->inicio = d->fim = 0;
     
@@ -29,7 +31,7 @@ Deque *deque_construct(){
 static void _map_destroy(Deque *d){
     //seleciona um a um os blocos alocados
     for(int i = d->bloco_inicial; i <= d->bloco_final; i++){
-        if(i == d->bloco_final && d->fim == 0)
+        if(i == d->bloco_final && d->fim == 0 && d->bloco_final != d->bloco_inicial)
             break;
         int idx_init = 0;
         int idx_fim = d->tamanho_bloco - 1;
@@ -42,7 +44,7 @@ static void _map_destroy(Deque *d){
 
         //vai destruindo todos os itens dentro do bloco
         for(int j = idx_init; j <= idx_fim; j++){
-            //d->destroy_fn(d->map[i][j]);
+            d->destroy_fn(d->map[i][j]);
         }
         //ao acabar, libera o ponteiro para o bloco
         free(d->map[i]);
@@ -82,9 +84,11 @@ static void _centraliza_mapa(Deque *d){
 void deque_push_front(Deque *d, data_type data){
     // Verifica se o deque está vazio
     if (deque_size(d) == 0) {
-        d->map[d->tamanho_mapa/2] = calloc(d->tamanho_bloco, sizeof(data_type));
-        d->bloco_final = d->bloco_inicial = d->tamanho_mapa/2;
-        d->inicio = d->fim = 0;
+        if(d->map[d->bloco_inicial] == NULL){
+            d->map[d->tamanho_mapa/2] = calloc(d->tamanho_bloco, sizeof(data_type));
+            d->bloco_final = d->bloco_inicial = d->tamanho_mapa/2;
+            d->inicio = d->fim = 0;
+        }
 
         d->map[d->bloco_inicial][d->inicio] = data;
         d->fim++;
@@ -117,12 +121,19 @@ void deque_push_front(Deque *d, data_type data){
 
 void deque_push_back(Deque *d, data_type data){
     if(deque_size(d) == 0){
-        d->bloco_final = d->bloco_inicial = d->tamanho_mapa/2;
-        d->inicio = d->fim = 0;
+        if(d->map[d->bloco_inicial] == NULL){
+            d->map[d->tamanho_mapa/2] = calloc(d->tamanho_bloco, sizeof(data_type));
+            d->bloco_final = d->bloco_inicial = d->tamanho_mapa/2;
+            d->inicio = d->fim = 0;
+        }
+
+        d->map[d->bloco_inicial][d->fim] = data;
+        d->fim++;
+        return;
     }
 
     // Verifica se é necessário alocar um novo bloco no final
-    if (d->fim == 0) {
+    if (d->fim == 0 && d->bloco_final != d->bloco_inicial) {
         if (d->bloco_final == d->tamanho_mapa) {
             // É necessário reajustar o mapa (ou realocar)
             _centraliza_mapa(d);
@@ -164,7 +175,7 @@ data_type deque_pop_back(Deque *d){
     d->map[novo_bloco][novo_fim] = NULL;
     
     d->fim = novo_fim;
-    if(d->fim == 0 && deque_size(d)){
+    if(d->fim == 0){
         free(d->map[d->bloco_final]);
         d->map[d->bloco_final] = NULL;
     }
@@ -182,7 +193,7 @@ data_type deque_pop_front(Deque *d){
     data_type pop = d->map[d->bloco_inicial][d->inicio];
     d->map[d->bloco_inicial][d->inicio] = NULL;
     
-    if(d->inicio == d->tamanho_bloco - 1 && deque_size(d)){
+    if(d->inicio == d->tamanho_bloco - 1){
         free(d->map[d->bloco_inicial]);
         d->map[d->bloco_inicial] = NULL;
         d->bloco_inicial++;

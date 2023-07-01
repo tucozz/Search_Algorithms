@@ -4,9 +4,10 @@
 
 typedef struct Deque Deque;
 typedef void* data_type;
+typedef void(*Destroy_fn)(void *k1);
 
 // criacao do deque
-Deque *deque_construct();
+Deque *deque_construct(Destroy_fn destroy_fn);
 
 // funcoes para insercao na direita e esquerda (devem ser feitas em O(1), com eventual realloc)
 void deque_push_back(Deque *d, data_type val);
