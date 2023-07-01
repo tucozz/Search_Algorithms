@@ -285,7 +285,7 @@ ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)
     LabNode *atual = _lab_node_construct(inicio, NULL);
     Queue *fronteira = queue_construct(NULL);
     Stack *expandidos = stack_construct(NULL);
-    while (atual->cel.y != fim.y || atual->cel.x != fim.y){
+    while (atual->cel.y != fim.y || atual->cel.x != fim.x){
         //PARA DEBUG
         //labirinto_print(l);
         //printf("\n");
