@@ -182,6 +182,15 @@ data_type deque_pop_back(Deque *d){
         d->map[d->bloco_final] = NULL;
     }
     d->bloco_final = novo_bloco;
+
+    if(deque_size(d) == 0){
+        if(d->map[d->bloco_inicial]){
+            free(d->map[d->bloco_inicial]);
+            d->map[d->bloco_inicial] = NULL;
+        }
+        d->bloco_final = d->bloco_inicial = d->tamanho_mapa/2;
+        d->inicio = d->fim = 0;
+    }
         
     return pop;
 }
@@ -201,6 +210,10 @@ data_type deque_pop_front(Deque *d){
         d->bloco_inicial++;
         d->inicio = -1;
         if(d->bloco_inicial == d->tamanho_mapa){
+            if(d->map[d->bloco_inicial]){
+                free(d->map[d->bloco_inicial]);
+                d->map[d->bloco_inicial] = NULL;
+            }
             d->bloco_final = d->bloco_inicial = d->tamanho_mapa/2;
             d->fim = 0;
         }
