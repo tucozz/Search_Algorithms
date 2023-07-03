@@ -123,10 +123,7 @@ LabNode *_atualiza_fronteira_heap(Labirinto *l, LabNode *node, HashTable *hash, 
         printf("IDX INVALIDO.\n");
     }
 
-    void *existe = hash_table_get(hash, &cel);
-
-
-    if(!_is_valid(l, cel) && !existe)
+    if(!_is_valid(l, cel))
         return NULL;
 
     labirinto_atribuir(l, cel.y, cel.x, FRONTEIRA);
