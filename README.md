@@ -36,19 +36,27 @@ Intruções de uso o programa.
 
 ### Entradas
 O usuário do programa deverá digitar como entrada:
-• O nome de um arquivo contendo o labirinto
-• As coordenadas (linha e coluna) da célula de entrada
-• As coordenadas da célula de saída.
-• O algoritmo a ser utilizado (BFS, DFS ou A*).
-• Nome do arquivo de saída.
+
+```sh
+./main <maze> <x1 y1> <x2 y1> <alg>
+```
+
+Onde,
+
+- `maze` - é o arquivo (maze.bin) que contém os labirinto a ser resolvido.
+- `x1 y1` - são as coordenadas de início.
+- `x2 y2` - são as coordenadas de fim
+- `alg`- é o algorítmo a ser usado (BFS, DFS ou A*)
+
 
 ### Labirintos
 O labirinto será armazenado em um arquivo binário.
-• Os primeiros 8 bytes serão 2 inteiros, L e C, representando o número
+
+- Os primeiros 8 bytes serão 2 inteiros, L e C, representando o número
 de linhas e colunas.
-• Cada célula será representada por um unsigned char (1 byte) com
+- Cada célula será representada por um unsigned char (1 byte) com
 valor 0 se a célula for livre e 1 se for ocupada.
-• As linhas serão escritas em sequência no arquivo binário. Isto é, após
+- As linhas serão escritas em sequência no arquivo binário. Isto é, após
 os 2 inteiros iniciais, os próximos C bytes serão o conteúdo da primeira
 linha, os próximos C bytes serão o conteúdo da segunda linha e assim
 por diante.
