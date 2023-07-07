@@ -159,6 +159,14 @@ void *heap_pop(Heap *heap){
     return pop;
 }
 
+void *heap_idx_data(Heap *heap, int idx){
+    return heap->nodes[idx].data;
+}
+
+int heap_idx_priority(Heap *heap, int idx){
+    return heap->nodes[idx].priority;
+}
+
 void heap_destroy(Heap *heap){
     free(heap->nodes);
     free(heap);

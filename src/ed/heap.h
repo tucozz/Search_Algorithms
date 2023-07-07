@@ -14,5 +14,7 @@ void *heap_min(Heap *heap);
 double heap_min_priority(Heap *heap);
 void *heap_pop(Heap *heap);
 void heap_destroy(Heap *heap);
+void *heap_idx_data(Heap *heap, int idx);
+int heap_idx_priority(Heap *heap, int idx);
 
 #endif

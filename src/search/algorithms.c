@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "algorithms.h"
 #include "../ed/queue.h"
 #include "../ed/stack.h"
@@ -77,16 +78,18 @@ ResultData _default_result()
     return result;
 }
 
-int _is_valid(Labirinto *l, Celula atual){
+int _is_valid(Labirinto *l, Celula atual, char *algoritmo){
     if ((atual.x > labirinto_n_colunas(l) - 1) || (atual.y > labirinto_n_linhas(l) - 1) || (atual.x < 0) || (atual.y < 0))
         return 0;
+    if(labirinto_obter(l, atual.y, atual.x) == FRONTEIRA && !(strcmp(algoritmo, "A_STAR")))
+        return 1;
     if(labirinto_obter(l, atual.y, atual.x) != LIVRE && labirinto_obter(l, atual.y, atual.x) != FIM)
         return 0;
 
     return 1;
 }
 
-LabNode *_atualiza_fronteira(Labirinto *l, LabNode *node, int idx){
+LabNode *_atualiza_fronteira(Labirinto *l, LabNode *node, int idx, char *algoritmo){
     Celula cel = node->cel;
     
     switch (idx)
@@ -123,10 +126,8 @@ LabNode *_atualiza_fronteira(Labirinto *l, LabNode *node, int idx){
         printf("IDX INVALIDO.\n");
     }
 
-    if(!_is_valid(l, cel))
+    if(!_is_valid(l, cel, algoritmo))
         return NULL;
-
-    labirinto_atribuir(l, cel.y, cel.x, FRONTEIRA);
     LabNode *pop = _lab_node_construct(cel, node);
     return pop;
 }
@@ -144,11 +145,19 @@ ResultData a_star(Labirinto *l, Celula inicio, Celula fim)
         //labirinto_print(l);
         //printf("\n");
         for(int i = 0; i < 8; i++){
-            LabNode *node = _atualiza_fronteira(l, atual, i);
+            LabNode *node = _atualiza_fronteira(l, atual, i, "A_STAR");
             double funcao_f = 0;
+            int *idx = NULL;
             if(node){
+                idx = hash_table_get(heap_hash , node);
                 funcao_f = node->custo_inicio + _calcula_distancia(node->cel, fim);
-                heap_push(fronteira, node, funcao_f);
+                if(!idx || heap_idx_priority(fronteira, *idx) > funcao_f){
+                    labirinto_atribuir(l, node->cel.y, node->cel.x, FRONTEIRA);
+                    heap_push(fronteira, node, funcao_f);
+                }
+                else{
+                    _lab_node_destroy(node);
+                }
             }
         }
         result.nos_expandidos++;
@@ -242,9 +251,11 @@ ResultData breadth_first_search(Labirinto *l, Celula inicio, Celula fim)
         //labirinto_print(l);
         //printf("\n");
         for(int i = 0; i < 8; i++){
-            LabNode *node = _atualiza_fronteira(l, atual, i);
-            if(node)
+            LabNode *node = _atualiza_fronteira(l, atual, i, "BFS");
+            if(node){
+                labirinto_atribuir(l, node->cel.y, node->cel.x, FRONTEIRA);
                 queue_push(fronteira, node);
+            }
         }
         result.nos_expandidos++;
         labirinto_atribuir(l, atual->cel.y, atual->cel.x, EXPANDIDO);
@@ -320,9 +331,11 @@ ResultData depth_first_search(Labirinto *l, Celula inicio, Celula fim)
         //labirinto_print(l);
         //printf("\n");
         for(int i = 0; i < 8; i++){
-            LabNode *node = _atualiza_fronteira(l, atual, i);
-            if(node)
+            LabNode *node = _atualiza_fronteira(l, atual, i, "DFS");
+            if(node){
+                labirinto_atribuir(l, node->cel.y, node->cel.x, FRONTEIRA);
                 stack_push(fronteira, node);
+            }
         }
         result.nos_expandidos++;
         labirinto_atribuir(l, atual->cel.y, atual->cel.x, EXPANDIDO);
